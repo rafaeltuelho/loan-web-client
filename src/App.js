@@ -1,26 +1,39 @@
 import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import "@patternfly/react-core/dist/styles/base.css";
+import "./App.css";
+import {
+  Brand,
+  Button,
+  Card,
+  CardActions,
+  CardHead,
+  CardHeader,
+  CardBody,
+  CardFooter,
+  Gallery,
+  GalleryItem,
+  Text,
+  TextContent,
+  TextVariants
+} from '@patternfly/react-core';
+import {
+  TimesIcon
+} from '@patternfly/react-icons';
+import AppPage from './components/page';
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <React.Fragment>
+        <AppPage>
+        </AppPage>
+      </React.Fragment>
+    );
+  }
 }
 
 export default App;
