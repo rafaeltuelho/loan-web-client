@@ -91,11 +91,7 @@ class AppPagelayout extends React.Component {
       >
         <PageSection variant={PageSectionVariants.light}>
           <TextContent>
-            <Text component="h1">Loan Application</Text>
-            <Text component="p">
-              Body text should be Overpass Regular at 16px. It should have leading of 24px because <br />
-              of it’s relative line height of 1.5.
-            </Text>
+            <Text component="h1">Loan Application Form</Text>
           </TextContent>
         </PageSection>
         <PageSection variant={PageSectionVariants.light}>

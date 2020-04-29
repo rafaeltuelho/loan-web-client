@@ -1,4 +1,8 @@
 import "@patternfly/react-core/dist/styles/base.css";
+import isNumeric from 'validator/lib/isNumeric';
+import isCurrency from 'validator/lib/isCurrency';
+import isPostalCode from 'validator/lib/isPostalCode';
+
 import './fonts.css';
 
 import React from 'react';
@@ -18,33 +22,104 @@ import {
 
 class AppForm extends React.Component {
   state = {
-    borrowerName: '',
-    borrowerDoB: '01-01-1970',
-    borrowerIncome: 0.0,
-    borrowerCreditScore: 0,
-    isBorrowerSelfEmployed: false,
-
-    loanType: '',
-    loanCounty: '',
-    loanZipCode: '',
-    loandIncomeDocumentDate: '01-01-2020',
+    fields: {
+      //borrower
+      borrowerName: '',
+      borrowerDoB: '',
+      borrowerIncome: '',
+      borrowerCreditScore: '',
+      isBorrowerSelfEmployed: false,
+      //loan
+      loanType: '',
+      loanCounty: '',
+      loanZipCode: '',
+      loandIncomeDocumentDate: '',
+    },
+    fieldErrors: {},
   };
 
-  handleTextInputChange = (value) => {
-    console.log(value);
-    //this.setState({ value });
+  onFormSubmit = evt => {
+    //const loans = this.state.loans;
+    const form = this.state.fields;
+    console.debug(form);
+    console.debug(evt);
+
+    evt.preventDefault();
+
+    if (this.validate()) return;
+
+    this.setState({
+      fields: {
+        //borrower
+        borrowerName: '',
+        borrowerDoB: '',
+        borrowerIncome: '',
+        borrowerCreditScore: '',
+        isBorrowerSelfEmployed: false,
+        //loan
+        loanType: '',
+        loanCounty: '',
+        loanZipCode: '',
+        loandIncomeDocumentDate: '',
+      }
+    });
   };
 
-  handleRadioInputChange = (_, event) => {
-    console.log(event);
-    const { value } = event.currentTarget;
-    // this.setState({ [value]: true });
+  // common generic field Input Change Handler
+  onInputChange = ({name, value, error}) => {
+    const fields = Object.assign({}, this.state.fields);
+    const fieldErrors = Object.assign({}, this.state.fieldErrors);
+
+    fields[name] = value;
+    fieldErrors[name] = error;
+
+    this.setState({fields, fieldErrors});
+  };
+
+  // Form level validation
+  validate = () => {
+    const form = this.state.fields;
+    const fieldErrors = this.state.fieldErrors;
+    const errMessages = Object.keys(fieldErrors).filter(k => fieldErrors[k]);
+
+    if (!form.borrowerName) return true;
+    if (!form.borrowerDoB) return true;
+    if (!form.borrowerIncome) return true;
+    if (!form.borrowerCreditScore) return true;
+    if (!form.loanType) return true;
+    if (!form.loanCounty) return true;
+    if (!form.loanZipCode) return true;
+    if (!form.loanIncomeDocumentDate) return true;
+    if (errMessages.length) return true;
+
+    return false;
+  };
+
+  // handler for Text fields
+  handleTextInputChange = (value, event) => {
+    const { id } = event.currentTarget;
+    console.log('handleTextInputChange Handling: ' + id + ' value = ' + value);
+
+    const error = value ? false : 'Field Required';
+    this.onInputChange({ name: id, value, error });
+  };
+
+  // handler for Radio fields
+  handleRadioInputChange = (value, event) => {
+    const { name } = event.currentTarget;
+    console.log('handleRadioInputChange Handling: ' + name + ' value = ' + value);
+
+    const error = value ? false : 'Field Required';
+    this.onInputChange({ name, value, error });
   };  
 
+  // handler for Select fields
   handleSelectInputChange = (value, event) => {
-    console.debug(event);
-    console.log(value);
-    //this.setState({ value });
+    const { id } = event.currentTarget;
+    console.log('handleSelectInputChange Handling: ' + id + ' value = ' + value);
+
+    const error = value ? false : 'Field Required';
+    this.onInputChange({ name: id, value, error });
   };
 
   render() {
@@ -60,74 +135,97 @@ class AppForm extends React.Component {
       { value: 'Baker', label: 'Baker', disabled: false },
       { value: 'Bradford', label: 'Bradford', disabled: false },
     ];
+    const dateRegex = /(19|20)\d\d[- /.](0[1-9]|1[012])[- /.](0[1-9]|[12][0-9]|3[01])/;
 
     return (
       <Form isHorizontal>
         {/** Borrower fields */}
         <FormGroup
-          label="Applicant Name"
+          label="Borrower Name"
           isRequired
-          fieldId="borrower-name">
+          fieldId="borrowerName"
+          isValid={ !this.state.fields.borrowerName ? false  : true }
+          helperText="Enter your Name"
+          helperTextInvalid="Name must not be empty">
           <TextInput
             isRequired
             type="text"
-            id="borrower-name"
-            name="borrower-name"
-            value={this.state.borrowerName}
-            onChange={this.handleTextInputChange} />
+            id="borrowerName"
+            name="borrowerName"
+            isValid={ !this.state.fields.borrowerName ? false  : true }
+            value={this.state.fields.borrowerName}
+            onChange={ this.handleTextInputChange } />
         </FormGroup>
         <FormGroup 
           label="Date of Birth" 
           isRequired={false} 
-          fieldId="borrower-dob">
+          fieldId="borrowerDoB"
+          isValid={ dateRegex.test(this.state.fields.borrowerDoB) }
+          helperText="Enter your Date of Birth"
+          helperTextInvalid="DoB must a valid Date">
           <TextInput
             isRequired={false}
             type="date"
-            id="borrower-dob"
-            name="borrower-dob"
-            placeholder='MM-DD-YYYY'
-            value={this.state.borrowerDoB}
-            onChange={this.handleTextInputChange} />
+            id="borrowerDoB"
+            name="borrowerDoB"
+            placeholder='MM/DD/YYYY'
+            isValid={ dateRegex.test(this.state.fields.borrowerDoB) }
+            value={this.state.fields.borrowerDoB}
+            onChange={ this.handleTextInputChange } />
         </FormGroup>
         <FormGroup 
           label="Income" 
           isRequired={false} 
-          fieldId="borrower-income">
+          fieldId="borrowerIncome"
+          isValid={ isCurrency(this.state.fields.borrowerIncome) }
+          helperText="Enter your yearly income "
+          helperTextInvalid="Income must be a valid currency value">
           <TextInput
             isRequired
             type="number"
-            id="borrower-income"
+            id="borrowerIncome"
             placeholder="$0.00"
-            name="borrower-income"
-            value={this.state.borrowerIncome}
-            onChange={this.handleTextInputChange} />
+            name="borrowerIncome"
+            isValid={ isCurrency(this.state.fields.borrowerIncome) }
+            value={this.state.fields.borrowerIncome}
+            onChange={ this.handleTextInputChange } />
         </FormGroup>
         <FormGroup 
-          label="Creadit Score" 
+          label="Credit Score" 
           isRequired 
-          fieldId="borrower-creditscore">
+          fieldId="borrowerCreditScore"
+          isValid={ isNumeric(this.state.fields.borrowerCreditScore) }
+          helperText="Enter your Credit Score "
+          helperTextInvalid="Score must be a valid number '1-1000'">
           <TextInput
             isRequired
             type="number"
-            id="borrower-creditscore"
+            id="borrowerCreditScore"
             placeholder="0-1000"
-            name="borrower-creditscore"
-            value={this.state.borrowerCreditScore}
-            onChange={this.handleTextInputChange}
+            name="borrowerCreditScore"
+            isValid={ isNumeric(this.state.fields.borrowerCreditScore) }
+            value={this.state.fields.borrowerCreditScore}
+            onChange={ this.handleTextInputChange }
           />
         </FormGroup>
         <FormGroup 
           isInline label="Self Employed?" 
           isRequired
           fieldId="isBorrowerSelfEmployed">
-          <Radio name="borrowerSelfEmployedRadio" label="Yes" id="borrowerSelfEmployedRadio"
+          <Radio 
+            name="isBorrowerSelfEmployed" 
+            label="Yes" 
+            id="borrowerSelfEmployedRadio"
             onChange={this.handleRadioInputChange} 
-            isChecked={this.state.isBorrowerSelfEmployed} 
-            value={this.state.isBorrowerSelfEmployed} />
-          <Radio name="borrowerNotSelfEmployedRadio" label="No" id="borrowerNotSelfEmployedRadio" 
+            isChecked={this.state.fields.isBorrowerSelfEmployed} 
+            />
+          <Radio 
+            name="isBorrowerSelfEmployed" 
+            label="No" 
+            id="borrowerNotSelfEmployedRadio" 
             onChange={this.handleRadioInputChange} 
-            isChecked={!this.state.isBorrowerSelfEmployed} 
-            value={this.state.isBorrowerSelfEmployed} />
+            isChecked={this.state.fields.isBorrowerSelfEmployed} 
+             />
         </FormGroup>
         
         <Divider />
@@ -136,10 +234,10 @@ class AppForm extends React.Component {
         <FormGroup
           label="Loan Type"
           isRequired
-          fieldId="loan-type">
+          fieldId="loanType">
           <FormSelect
             id="loanType" 
-            value={this.state.loanType} 
+            value={this.state.fields.loanType} 
             onChange={this.handleSelectInputChange}>
             {
             loanTypes.map((option, index) => (
@@ -156,10 +254,10 @@ class AppForm extends React.Component {
         <FormGroup
           label="Loan County"
           isRequired
-          fieldId="loan-county">
+          fieldId="loanCounty">
           <FormSelect
             id="loanCounty" 
-            value={this.state.loanCounty} 
+            value={this.state.fields.loanCounty} 
             onChange={this.handleSelectInputChange} >
             {
             countyList.map((option, index) => (
@@ -176,33 +274,41 @@ class AppForm extends React.Component {
         <FormGroup
           label="Loan Zip Code"
           isRequired
-          fieldId="loan-zip-code">
+          fieldId="loanZipCode"
+          isValid={ isPostalCode(this.state.fields.loanZipCode, 'US') }
+          helperText="Enter the Postal Code "
+          helperTextInvalid="Must be a valid US Postal Code">
           <TextInput
             isRequired
             type="text"
-            id="loan-zip-code"
-            name="loan-zip-code"
-            value={this.state.loanZipCode}
-            onChange={this.handleTextInputChange} />
+            id="loanZipCode"
+            name="loanZipCode"
+            isValid={ isPostalCode(this.state.fields.loanZipCode, 'US') }
+            value={this.state.fields.loanZipCode}
+            onChange={ this.handleTextInputChange } />
         </FormGroup>
         <FormGroup 
           label="Income Document Date" 
           isRequired 
-          fieldId="loan-income-document-date">
+          fieldId="loanIncomeDocumentDate"
+          isValid={ dateRegex.test(this.state.fields.loanIncomeDocumentDate) }
+          helperText="Enter a valid Date"
+          helperTextInvalid="Income Document Date must a valid Date">
           <TextInput
             isRequired={false}
             type="date"
-            id="loan-income-document-date"
-            name="loan-income-document-date"
-            placeholder='MM-DD-YYYY'
-            value={this.state.loanIncomeDocumentDate}
-            onChange={this.handleTextInputChange} />
+            id="loanIncomeDocumentDate"
+            name="loanIncomeDocumentDate"
+            placeholder='MM/DD/YYYY'
+            isValid={ dateRegex.test(this.state.fields.loanIncomeDocumentDate) }
+            value={this.state.fields.loanIncomeDocumentDate}
+            onChange={ this.handleTextInputChange } />
         </FormGroup>
 
-        <ActionGroup>
-          <Button variant="primary">Submit</Button>
-          <Button variant="secondary">Cancel</Button>
-        </ActionGroup>
+          <ActionGroup>
+            <Button variant="primary" type="submit" onClick={this.onFormSubmit}>Submit</Button>
+            <Button variant="secondary" type="reset">Cancel</Button>
+          </ActionGroup>
       </Form>
     );
   }

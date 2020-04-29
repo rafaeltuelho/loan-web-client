@@ -93,7 +93,7 @@ class AppToolbar extends React.Component {
               position="right"
               onSelect={this.onDropdownSelect}
               isOpen={isDropdownOpen}
-              toggle={<DropdownToggle onToggle={this.onDropdownToggle}>Rafael Soares</DropdownToggle>}
+              toggle={<DropdownToggle onToggle={this.onDropdownToggle}>Borrower User</DropdownToggle>}
               dropdownItems={userDropdownItems}
             />
           </ToolbarItem>
