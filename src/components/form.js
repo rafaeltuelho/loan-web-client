@@ -22,7 +22,14 @@ import {
   AlertActionCloseButton,
   Tabs, 
   Tab, 
-  Modal
+  Modal,
+  TextContent,
+  Text,
+  TextVariants,
+  TextList,
+  TextListVariants,
+  TextListItem,
+  TextListItemVariants,
 } from '@patternfly/react-core';
 
 const CASES_KIE_CONTAINER_NAME='loan-cases';
@@ -49,15 +56,20 @@ class AppForm extends React.Component {
     fieldErrors: {},
     _saveStatus: 'NONE',
     _canValidate: false,
-    _serverResponse: null,
-    _responseAlertVisible: false,
+    _serverResponse: {},
+    _responseErrorAlertVisible: false,
     _responseModalOpen: false,
-    _activeTabKey: 2,
+    _activeTabKey: 2,          
+    _alert: {
+      visible: false,
+      variant: 'default',
+      msg: '',
+    },
   };
 
   onFormSubmit = evt => {
     //const loans = this.state.loans;
-    const form = this.state.fields;
+    // const form = this.state.fields;
 
     evt.preventDefault();
 
@@ -77,13 +89,13 @@ class AppForm extends React.Component {
 
     const loanFact = kieClient.newInsertCommand({
       "com.redhat.demo.loan_data_objects.Loan": {
-          "type": this.state.fields.loanCounty,
+          "type": this.state.fields.loanType,
           "applicationDate": this.state.fields.loanApplicationDate,
           "county": this.state.fields.loanCounty,
           "zipcode": this.state.fields.loanZipCode,
           "effectiveDate": null,
           "lockedDate": null,
-          "incomeDocumentDate": this.state.fields.loandIncomeDocumentDate,
+          "incomeDocumentDate": this.state.fields.loanIncomeDocumentDate,
       }
     }, 'loan', true);
 
@@ -92,6 +104,8 @@ class AppForm extends React.Component {
     kieClient
       .fireRules(facts, RULES_KIE_CONTAINER_NAME)
       .then((response) => {
+
+        const loanFact = kieClient.extractFactFromKieResponse(response, 'loan');
 
         this.setState({
           fields: {
@@ -111,8 +125,7 @@ class AppForm extends React.Component {
           fieldErrors: {},
           _saveStatus: 'NONE',
           _canValidate: false,
-          _serverResponse: response,
-          _responseAlertVisible: true,
+          _serverResponse: loanFact,
           _responseModalOpen: true,
           _activeTabKey: 2,
         });
@@ -122,7 +135,17 @@ class AppForm extends React.Component {
       })
       .catch(err => {
         console.error(err);
-        this.setState({_saveStatus: 'ERROR'});
+        this.setState({
+          _saveStatus: 'ERROR',
+          _alert: {
+            visible: true,
+            variant: 'danger',
+            msg: err.status + ': ' +  err.response,
+          },
+        });
+        
+        this.scrollToTop();
+
       });
 
   };
@@ -188,7 +211,11 @@ class AppForm extends React.Component {
 
   closeResponseAlert = () => {
     this.setState({
-      _responseAlertVisible: false,
+      _alert: {
+        visible: false,
+        variant: 'default',
+        msg: '',
+      },
     });
   }
   
@@ -319,33 +346,57 @@ class AppForm extends React.Component {
     return (
       <Form isHorizontal>
         <React.Fragment>
-        {/*
-        this.state._responseAlertVisible && (
-          <Alert
-            variant="success"
-            autoFocus={true}
-            title={"Rules fired!" +  JSON.stringify(this.state._serverResponse, null, '\t')}
-            action={<AlertActionCloseButton onClose={this.closeResponseAlert} />}
-          />
-        )
-        */}
+          {/**/
+          this.state._alert.visible && (
+            <Alert
+              variant={this.state._alert.variant}
+              autoFocus={true}
+              title={this.state._alert.msg}
+              action={<AlertActionCloseButton onClose={this.closeResponseAlert} />}
+            />
+          )
+          /**/}
 
-        <Modal
-          isSmall
-          title="Modal Header"
-          isOpen={this.state._responseModalOpen}
-          onClose={this.handleModalToggle}
-          actions={[
-            <Button key="confirm" variant="primary" onClick={this.handleModalToggle}>
-              Confirm
-            </Button>,
-            <Button key="cancel" variant="link" onClick={this.handleModalToggle}>
-              Cancel
-            </Button>
-          ]}
-          isFooterLeftAligned
-        >
-          <pre>{JSON.stringify(this.state._serverResponse, null, '\t')}</pre>
+          <Modal
+            isSmall
+            title="Loan Application submited!"
+            isOpen={this.state._responseModalOpen}
+            onClose={this.handleModalToggle}
+            actions={[
+              <Button key="confirm" variant="primary" onClick={this.handleModalToggle}>
+                Confirm
+              </Button>,
+              <Button key="cancel" variant="link" onClick={this.handleModalToggle}>
+                Cancel
+              </Button>
+            ]}
+            isFooterLeftAligned
+          >
+            <TextContent>
+              <TextList component={TextListVariants.dl}>
+                <TextListItem component={TextListItemVariants.dt}>Loan Type</TextListItem>
+                <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.type}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Effective Date</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.effectiveDate}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Application Date</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.applicationDate}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Conditions</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.conditions}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>County</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.county}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Zip Code</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.zipcode}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Income Document Date</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.incomeDocumentDate}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Locked Date</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.lockedDate}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Paying Off Heloc</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.payingOffHeloc}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Status</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.status}</TextListItem>
+              </TextList>
+            </TextContent>
+
         </Modal>        
         </React.Fragment>
         {/** Borrower fields */}
