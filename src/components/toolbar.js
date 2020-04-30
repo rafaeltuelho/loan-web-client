@@ -5,7 +5,6 @@ import {
   Dropdown,
   DropdownToggle,
   DropdownItem,
-  DropdownSeparator,
   KebabToggle,
   Toolbar,
   ToolbarGroup,

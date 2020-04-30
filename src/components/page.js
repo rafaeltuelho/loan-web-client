@@ -3,34 +3,16 @@ import './fonts.css';
 
 import React from 'react';
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  Button,
-  ButtonVariant,
-  Card,
-  CardBody,
-  Dropdown,
-  DropdownToggle,
-  DropdownItem,
-  DropdownSeparator,
-  Gallery,
-  GalleryItem,
-  KebabToggle,
   Nav,
   NavExpandable,
   NavItem,
   NavList,
   Page,
-  PageHeader,
   PageSection,
   PageSectionVariants,
   PageSidebar,
-  SkipToContent,
   TextContent,
   Text,
-  Toolbar,
-  ToolbarGroup,
-  ToolbarItem
 } from '@patternfly/react-core';
 // make sure you've installed @patternfly/patternfly
 import AppForm from './form'
