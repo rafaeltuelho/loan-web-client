@@ -52,11 +52,16 @@ class AppForm extends React.Component {
       loanZipCode: '',
       loanIncomeDocumentDate: '',
       loanApplicationDate: '',
+      loanLockedDate: '',
+      loanPayingOffHeloc: 'none',
     },
     fieldErrors: {},
     _saveStatus: 'NONE',
     _canValidate: false,
-    _serverResponse: {},
+    _serverResponse: {
+      loanFact: {},
+      responseFact: {},
+    },
     _responseErrorAlertVisible: false,
     _responseModalOpen: false,
     _activeTabKey: 2,          
@@ -94,18 +99,27 @@ class AppForm extends React.Component {
           "county": this.state.fields.loanCounty,
           "zipcode": this.state.fields.loanZipCode,
           "effectiveDate": null,
-          "lockedDate": null,
+          "lockedDate": this.state.fields.loanLockedDate,          
           "incomeDocumentDate": this.state.fields.loanIncomeDocumentDate,
+          "payingOffHeloc": this.state.fields.loanPayingOffHeloc === 'yes' ? true : false,
       }
     }, 'loan', true);
 
-    const facts = [borrowerFact, loanFact];
+    const responseFact = kieClient.newInsertCommand({
+      "com.redhat.demo.loan_data_objects.Response": {
+          "error": null,
+          "questions": [],
+       }
+    }, 'response', true);
+
+    const facts = [borrowerFact, loanFact, responseFact];
 
     kieClient
       .fireRules(facts, RULES_KIE_CONTAINER_NAME)
       .then((response) => {
 
         const loanFact = kieClient.extractFactFromKieResponse(response, 'loan');
+        const responseFact = kieClient.extractFactFromKieResponse(response, 'response');
 
         this.setState({
           fields: {
@@ -121,13 +135,18 @@ class AppForm extends React.Component {
             loanZipCode: '',
             loanIncomeDocumentDate: '',
             loanApplicationDate: '',
+            loanLockedDate: '',
+            loanPayingOffHeloc: 'no',      
           },
           fieldErrors: {},
           _saveStatus: 'NONE',
           _canValidate: false,
-          _serverResponse: loanFact,
+          _serverResponse: {
+            loanFact,
+            responseFact,
+          },
           _responseModalOpen: true,
-          _activeTabKey: 2,
+          // _activeTabKey: 2,
         });
 
         // scroll the page to make alert visible
@@ -168,9 +187,9 @@ class AppForm extends React.Component {
     const fieldErrors = this.state.fieldErrors;
     const errMessages = Object.keys(fieldErrors).filter(k => fieldErrors[k]);
 
-    if (!form.borrowerName) return true;
-    if (!form.borrowerDoB) return true;
-    if (!form.borrowerIncome) return true;
+    // if (!form.borrowerName) return true;
+    // if (!form.borrowerDoB) return true;
+    // if (!form.borrowerIncome) return true;
     if (!form.borrowerCreditScore) return true;
     if (!form.isBorrowerSelfEmployed === 'none') return true;
     if (!form.loanType) return true;
@@ -230,13 +249,10 @@ class AppForm extends React.Component {
     event.preventDefault();
 
     switch (tabIndex) {
-      case 2:
+      case 2: //Rule2_v1 (Loan 1)
         this.setState({
           fields: {
             //borrower
-            borrowerName: 'Borrower Rule2_v1',
-            borrowerDoB: '1983-09-29',
-            borrowerIncome: '100000',
             borrowerCreditScore: '620',
             isBorrowerSelfEmployed: 'yes',
             //loan
@@ -244,72 +260,138 @@ class AppForm extends React.Component {
             loanCounty: 'Broward',
             loanZipCode: '33008',
             loanIncomeDocumentDate: '2020-03-01',
-            loanApplicationDate: '2020-04-10',
+            loanApplicationDate: '2020-04-02',
+            loanLockedDate: null,
+            loanPayingOffHeloc: 'no',      
           },
           _canValidate: false,
         });        
         break;
     
-      case 3:
+      case 3: //Rule2_v2 (Loan 4)
         this.setState({
           fields: {
             //borrower
-            borrowerName: 'Nicole',
-            borrowerDoB: '1983-09-29',
-            borrowerIncome: '100',
             borrowerCreditScore: '700',
             isBorrowerSelfEmployed: 'no',
             //loan
-            loanType: 'FHA',
+            loanType: 'VA',
             loanCounty: 'Broward',
-            loanZipCode: '01801',
-            loanIncomeDocumentDate: '1983-09-29',
-            loanApplicationDate: '1983-09-29',
+            loanZipCode: '33008',
+            loanIncomeDocumentDate: '2020-03-01',
+            loanApplicationDate: '2020-04-16',
+            loanLockedDate: null,
+            loanPayingOffHeloc: 'no',      
           },
           _canValidate: false,
         });
         break;
 
-      case 4:
+      case 4: //Rule3_v1 (Loan 1)
         this.setState({
           fields: {
             //borrower
-            borrowerName: 'Nicole',
-            borrowerDoB: '1983-09-29',
-            borrowerIncome: '100',
             borrowerCreditScore: '700',
-            isBorrowerSelfEmployed: 'no',
+            isBorrowerSelfEmployed: 'yes',
             //loan
-            loanType: 'FHA',
+            loanType: 'Jumbo',
             loanCounty: 'Broward',
             loanZipCode: '01801',
-            loanIncomeDocumentDate: '1983-09-29',
-            loanApplicationDate: '1983-09-29',
+            loanIncomeDocumentDate: '2020-03-15',
+            loanApplicationDate: '2020-03-15',
           },
           _canValidate: false,
         });
         break;
 
-      case 5:
+      case 5: //Rule3_v2 (Loan 5)
         this.setState({
           fields: {
             //borrower
-            borrowerName: 'Nicole',
-            borrowerDoB: '1983-09-29',
-            borrowerIncome: '100',
             borrowerCreditScore: '700',
-            isBorrowerSelfEmployed: 'no',
+            isBorrowerSelfEmployed: 'yes',
             //loan
-            loanType: 'FHA',
+            loanType: 'Jumbo',
             loanCounty: 'Broward',
             loanZipCode: '01801',
-            loanIncomeDocumentDate: '1983-09-29',
-            loanApplicationDate: '1983-09-29',
+            loanIncomeDocumentDate: '2020-05-05',
+            loanApplicationDate: '2020-05-05',
           },
           _canValidate: false,
         });
         break;
             
+      case 6: //Rule4_v1 (Loan 1)
+      this.setState({
+        fields: {
+          //borrower
+          borrowerCreditScore: '618',
+          isBorrowerSelfEmployed: 'no',
+          //loan
+          loanType: 'FHA',
+          loanCounty: 'Broward',
+          loanZipCode: '01801',
+          loanIncomeDocumentDate: '2020-05-01',
+          loanApplicationDate: '1983-05-01',
+        },
+        _canValidate: false,
+      });
+      break;
+
+      case 7: //Rule4_v2 (Loan 3)
+      this.setState({
+        fields: {
+          //borrower
+          borrowerCreditScore: '680',
+          isBorrowerSelfEmployed: 'no',
+          //loan
+          loanType: 'FHA',
+          loanCounty: 'Broward',
+          loanZipCode: '01801',
+          loanIncomeDocumentDate: '1983-09-29',
+          loanApplicationDate: '1983-09-29',
+          loanLockedDate: '2020-03-30',
+        },
+        _canValidate: false,
+      });
+      break;
+          
+      case 8: //Rule5_v1 (Loan 2)
+      this.setState({
+        fields: {
+          //borrower
+          borrowerCreditScore: '700',
+          isBorrowerSelfEmployed: 'no',
+          //loan
+          loanType: 'FHA',
+          loanCounty: 'Broward',
+          loanZipCode: '01801',
+          loanIncomeDocumentDate: '2020-05-01',
+          loanApplicationDate: '2020-05-01',
+          loanPayingOffHeloc: 'yes',
+        },
+        _canValidate: false,
+      });
+      break;
+
+      case 9: //Rule5_v2 (Loan 3)
+      this.setState({
+        fields: {
+          //borrower
+          borrowerCreditScore: '700',
+          isBorrowerSelfEmployed: 'no',
+          //loan
+          loanType: 'Conventional',
+          loanCounty: 'Broward',
+          loanZipCode: '01801',
+          loanIncomeDocumentDate: '2020-05-01',
+          loanApplicationDate: '2020-05-01',
+          loanPayingOffHeloc: 'yes',
+        },
+        _canValidate: false,
+      });
+      break;
+                    
       default:
         break;
     }
@@ -330,8 +412,9 @@ class AppForm extends React.Component {
     const loanTypes = [
       { value: 'NONE', label: 'Select Loan Type', disabled: false },
       { value: 'FHA', label: 'FHA', disabled: false },
-      { value: 'CNV', label: 'Conventional', disabled: false },
-      { value: 'JNB', label: 'Jumbo', disabled: false },
+      { value: 'VA', label: 'VA', disabled: false },
+      { value: 'Conventional', label: 'Conventional', disabled: false },
+      { value: 'Jumbo', label: 'Jumbo', disabled: false },
     ];
     const countyList = [
       { value: 'NONE', label: 'Select County', disabled: false },
@@ -375,25 +458,27 @@ class AppForm extends React.Component {
             <TextContent>
               <TextList component={TextListVariants.dl}>
                 <TextListItem component={TextListItemVariants.dt}>Loan Type</TextListItem>
-                <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.type}</TextListItem>
+                <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.type}</TextListItem>
                 <TextListItem component={TextListItemVariants.dt}>Effective Date</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.effectiveDate}</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.effectiveDate}</TextListItem>
                 <TextListItem component={TextListItemVariants.dt}>Application Date</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.applicationDate}</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.applicationDate}</TextListItem>
                 <TextListItem component={TextListItemVariants.dt}>Conditions</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.conditions}</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.conditions}</TextListItem>
                 <TextListItem component={TextListItemVariants.dt}>County</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.county}</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.county}</TextListItem>
                 <TextListItem component={TextListItemVariants.dt}>Zip Code</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.zipcode}</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.zipcode}</TextListItem>
                 <TextListItem component={TextListItemVariants.dt}>Income Document Date</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.incomeDocumentDate}</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.incomeDocumentDate}</TextListItem>
                 <TextListItem component={TextListItemVariants.dt}>Locked Date</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.lockedDate}</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.lockedDate}</TextListItem>
                 <TextListItem component={TextListItemVariants.dt}>Paying Off Heloc</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.payingOffHeloc}</TextListItem>
-                <TextListItem component={TextListItemVariants.dt}>Status</TextListItem>
-                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.status}</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.loanFact.payingOffHeloc ? 'yes' : 'no'}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Questions</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.responseFact.questions}</TextListItem>
+                <TextListItem component={TextListItemVariants.dt}>Errors</TextListItem>
+                  <TextListItem component={TextListItemVariants.dd}>{this.state._serverResponse.responseFact.error}</TextListItem>
               </TextList>
             </TextContent>
 
@@ -401,19 +486,64 @@ class AppForm extends React.Component {
         </React.Fragment>
         {/** Borrower fields */}
         <Tabs isFilled activeKey={this.state._activeTabKey} onSelect={this.handleTabClick}>
-          <Tab eventKey={2} title="Rule 2">
-            Rule 2 section
+          <Tab eventKey={2} title="Rule2_v1">
+            Expiration Date <strong>(Rule2_v1 - loan 1)</strong>
+            <br/>
+            <Text component={TextVariants.small}>
+            <em>"FHA loan 4/2, income date entered as 3/1/2020 - Exp date calculated as 6/28/2020"</em>
+            </Text>
           </Tab>
-          <Tab eventKey={3} title="Rule 3">
-            Rule 3 section
+          <Tab eventKey={3} title="Rule2_v2">
+            Expiration Date <strong>(Rule2_v2 - loan 4)</strong>
+            <br/>
+            <Text component={TextVariants.small}>
+            <em>Scenario: "VA loan 4/16, income date entered as 3/1/2020 - Exp date calculated as 6/28/2020"</em>
+            </Text>
           </Tab>
-          <Tab eventKey={4} title="Rule 4">
-            Rule 4 section
+          <Tab eventKey={4} title="Rule3_v1">
+            UW Jumbo Loans <strong>(Rule3_v1 - loan 1)</strong>
+            <br/>
+            <Text component={TextVariants.small}>
+            <em>Scenario: "Jumbo loan with application date of 3/15 - self employed borrower.  - No condition added"</em>
+            </Text>
           </Tab>
-          <Tab eventKey={5} title="Rule 5">
-            Rule 5 section
+          <Tab eventKey={5} title="Rule3_v2">
+            Jumbo Loans <strong>(Rule3_v2 - loan 5)</strong>
+            <br/>
+            <Text component={TextVariants.small}>
+            <em>Scenario: "Jumbo loan with application date of 5/5/2020 - self employed flag checked - Conditions 1 and 2 added."</em>
+            </Text>
           </Tab>
-        </Tabs>        
+          <Tab eventKey={6} title="Rule4_v1">
+            FHA FICO <strong>(Rule4_v1 - loan 1)</strong>
+            <br/>
+            <Text component={TextVariants.small}>
+            <em>Scenario: "FHA loan with 618 fico - Error received."</em>
+            </Text>
+          </Tab>
+          <Tab eventKey={7} title="Rule4_v2">
+            FHA FICO <strong>(Rule4_v2 - loan 3)</strong>
+            <br/>
+            <Text component={TextVariants.small}>
+            <em>Scenario: "FHA loan with credit score of 650 - locked on 3/30/2020 - No error received"</em>
+            </Text>
+          </Tab>
+          <Tab eventKey={8} title="Rule5_v1">
+            Post Closing <strong>(Rule5_v1 - loan 2)</strong>
+            <br/>
+            <Text component={TextVariants.small}>
+            <em>Scenario: "conventional loan not paying off a HELOC - do not populate checklist question"</em>
+            </Text>
+          </Tab>
+          <Tab eventKey={9} title="Rule5_v1">
+            Post Closing <strong>(Rule5_v1 - loan 3)</strong>
+            <br/>
+            <Text component={TextVariants.small}>
+            <em>Scenario: "conventional loan paying off a HELOC - populate checklist question"</em>
+            </Text>
+          </Tab>
+        </Tabs>
+        {/**        
         <FormGroup
           label="Borrower Name"
           isRequired
@@ -464,6 +594,8 @@ class AppForm extends React.Component {
             value={this.state.fields.borrowerIncome}
             onChange={ this.handleTextInputChange } />
         </FormGroup>
+        **/
+        }
         <FormGroup 
           label="Credit Score" 
           isRequired 
@@ -568,6 +700,29 @@ class AppForm extends React.Component {
             onChange={ this.handleTextInputChange } />
         </FormGroup>
         <FormGroup 
+          isInline label="Paying Off Heloc?" 
+          isRequired={false}
+          fieldId="loanPayingOffHeloc"
+          helperTextInvalid="Select 'Yes' or 'No'"
+        >
+          <Radio 
+            name="loanPayingOffHeloc" 
+            id="loanPayingOffHeloc"
+            label="Yes" 
+            value="yes"
+            onChange={this.handleRadioInputChange} 
+            isChecked={this.state.fields.loanPayingOffHeloc === 'yes'}
+          />
+          <Radio 
+            name="loanPayingOffHeloc" 
+            id="loanPayingOffHeloc" 
+            label="No" 
+            value="no"
+            onChange={this.handleRadioInputChange} 
+            isChecked={this.state.fields.loanPayingOffHeloc === 'no'}
+          />
+        </FormGroup>
+        <FormGroup 
           label="Income Document Date" 
           isRequired 
           fieldId="loanIncomeDocumentDate"
@@ -599,6 +754,21 @@ class AppForm extends React.Component {
             placeholder='MM/DD/YYYY'
             isValid={ this.isValid( () => (dateRegex.test(this.state.fields.loanApplicationDate)) ) }
             value={this.state.fields.loanApplicationDate}
+            onChange={ this.handleTextInputChange } />
+        </FormGroup>
+        <FormGroup 
+          label="Locked Date" 
+          isRequired={false} 
+          fieldId="loanLockedDate"
+          helperText="Enter a valid Date"
+          helperTextInvalid="Locked Date must be valid">
+          <TextInput
+            isRequired={false}
+            type="date"
+            id="loaLockednDate"
+            name="loanLockedDate"
+            placeholder='MM/DD/YYYY'
+            value={this.state.fields.loanLockedDate}
             onChange={ this.handleTextInputChange } />
         </FormGroup>
 
