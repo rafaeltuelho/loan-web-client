@@ -442,7 +442,7 @@ class AppForm extends React.Component {
 
           <Modal
             isSmall
-            title="Loan Application submited!"
+            title="Loan Application submitted!"
             isOpen={this.state._responseModalOpen}
             onClose={this.handleModalToggle}
             actions={[
@@ -532,7 +532,7 @@ class AppForm extends React.Component {
             Post Closing <strong>(Rule5_v1 - loan 2)</strong>
             <br/>
             <Text component={TextVariants.small}>
-            <em>Scenario: "conventional loan not paying off a HELOC - do not populate checklist question"</em>
+            <em>Scenario: "FHA loan paying off a HELOC - do not populate checklist question"</em>
             </Text>
           </Tab>
           <Tab eventKey={9} title="Rule5_v1">

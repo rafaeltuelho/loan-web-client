@@ -3,36 +3,15 @@ import fetch from 'isomorphic-fetch';
 const KIE_SERVER_API_BASE_URL='http://localhost:8080/kie-server/services/rest/server';
 const KIE_SERVER_CLIENT_USER='pamAdmin';
 const KIE_SERVER_CLIENT_PWD='redhatpam1!';
+const KIE_SERVER_AUTH_BASE64=btoa(KIE_SERVER_CLIENT_USER + ':' + KIE_SERVER_CLIENT_PWD);
 // const KIE_SERVER_API_RULES_CONTEXT_PATH='/containers/instances/${kie_container_name}';
 // const KIE_SERVER_API_CASES_CONTEXT_PATH='/containers/${kie_container_name}/cases/${case_definition_id}/instances';
-
-//HTTP Headers:
-// Accept: application/json
-// Content-Type: application/json
-// Authorization:'Basic cGFtQWRtaW46cmVkaGF0cGFtMSE='
-
-//Fire a Drools Rule
-//POST http://localhost:8080/kie-server/services/rest/server/containers/instances/loan-rules_1.0.0-SNAPSHOT
-
-// create a new case instance
-//POST http://localhost:8080/kie-server/services/rest/server/containers/loan-cases/cases/loan-cases.StandardLoanCase/instances
-//Body: {"case-data": { "var name": {} } }
-
-// add a loan to case
-//POST http://localhost:8080/kie-server/services/rest/server/containers/loan-cases_1.0.0-SNAPSHOT/cases/instances/CASE-0000000001/caseFile
-//Body: { caseData variable: {...} }
-
-//fire rules in a case instance
-//PUT http://localhost:8080/kie-server/services/rest/server/containers/loan-cases_1.0.0-SNAPSHOT/cases/instances/CASE-0000000002/tasks/Rules
-//Body: {}
-
 
 /**
  * Client for the Remote KIE Sever API
  */
 class KieClient {
   constructor() {
-    
   }
 
   // kie API call functions
@@ -64,7 +43,7 @@ class KieClient {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization':'Basic cGFtQWRtaW46cmVkaGF0cGFtMSE=',
+        'Authorization':'Basic ' + KIE_SERVER_AUTH_BASE64,
       },
       body: JSON.stringify(caseData),
     }).then(this.checkStatus)
@@ -132,40 +111,13 @@ class KieClient {
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization':'Basic cGFtQWRtaW46cmVkaGF0cGFtMSE=',
+          'Authorization':'Basic ' + KIE_SERVER_AUTH_BASE64,
         },
         body: JSON.stringify(requestBody),
       }).then(this.checkHttpStatus)
             .then(this.parseJson)
             .then(this.checkKieResponse) 
   }
-
-//   getOpenUnderwritingLoanCases() {
-
-//   }
-
-//   validateOpenLoansPipeline() {
-
-//   }
-
-//   naturalDisasterRule1() {
-
-//   }
-
-//   expiratonDateRule2() {
-
-//   }
-
-//   uwConditionRule3() {
-
-//   }
-
-//   fhaFicoRule4(){
-
-//   }
-//   postCloseConditionRule3() {
-
-//   }
 
   // helper functions
 
